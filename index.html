@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>お酒の美術館 西九条駅前店</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#111 url('nisikujo.jpg') center center / cover fixed no-repeat;color:#eee;font-family: "Yu Mincho", "Hiragino Mincho ProN","Noto Serif JP", serif;}
+body::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:-1;}
+header{text-align:center;padding:28px 16px;border-bottom:1px solid #b99a54;background:rgba(0,0,0,0.5)}h1{margin:0;color:#d8b66a;font-size:clamp(22px,4vw,36px)}.sub{color:#aaa;margin-top:6px}
+.controls{max-width:1100px;margin:20px auto;padding:0 16px;display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}input,select{width:100%;padding:12px;background:#222;color:#fff;border:1px solid #65532e;border-radius:6px}
+#status,#count{max-width:1100px;margin:10px auto;padding:0 16px;color:#cdb77e}.grid{max-width:1100px;margin:auto;padding:0 16px 30px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.card{background: #1d1d1d;;border:1px solid #514326;border-radius:8px;padding:15px;cursor:pointer}.card:hover{border-color:#d8b66a}.card h2{font-size:17px;margin:0 0 8px;color:#f0d38a}.meta{font-size:13px;color:#aaa}.price{margin-top:12px;font-weight:bold}
+dialog{max-width:620px;width:calc(100% - 30px);background: #1c1c1c;;color:#eee;border:1px solid #b99a54;border-radius:10px;padding:22px}dialog::backdrop{background:linear-gradient(rgba(0,0,0,0.9),rgba(0,0,0,0.9)), url('nisikujo.jpg') center center / cover fixed no-repeat}.row{padding:10px 0;border-bottom:1px solid #383838}.label{color:#d8b66a;font-size:13px}.value{white-space:pre-wrap;margin-top:3px}button{padding:9px 16px;border:0;border-radius:5px}
+footer{text-align:center;color:#888;font-size:12px;line-height:1.8;padding:30px 16px;margin-top:40px;border-top:1px solid #332a18;}
+@media(max-width:650px){.controls{grid-template-columns:1fr}}
+</style></head><body>
+<header><h1>お酒の美術館 西九条駅前店</h1><div class="sub">BAR LIQUOR MUSEUM Nishi-Kujo</div></header>
+<section class="controls">
+    <input id="q" placeholder="銘柄・分類・特徴などを検索">
+    <select id="cat"><option value="">カテゴリ：すべて</option></select><select id="subcat" disabled><option value="">サブカテゴリ：すべて</option></select><select id="price">
+    <option value="">価格：すべて</option><option value="1000">1,000円以下</option><option value="1500">1,500円以下</option><option value="2000">2,000円以下</option><option value="3000">3,000円以下</option></select></section>
+<div id="status">Excelを読み込み中…</div><div id="count"></div><main class="grid" id="grid"></main>
+<dialog id="dlg"><div id="detail"></div><p><button onclick="dlg.close()">閉じる</button></p></dialog>
+<script>
+const FILE='西九条、在庫整理、店頭確認用.xlsx';let items=[];
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function val(row,i){return row[i]??''}
+async function load(){
+ const res=await fetch(FILE);if(!res.ok)throw Error('Excelファイルが見つかりません');
+ const wb=XLSX.read(await res.arrayBuffer(),{type:'array'});
+ const sheets=['3段目','2段目','1段目','カウンター','その他'];
+ for(const sheet of sheets){
+  const ws=wb.Sheets[sheet];if(!ws)continue;
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  let head=rows.findIndex(r=>r.includes('名称'));if(head<0)continue;
+  for(const r of rows.slice(head+1)){
+   if(!String(r[0]).trim())continue;
+   const x={sheet,name:val(r,0),original:val(r,1),category:val(r,2),subcategory:val(r,3),note:val(r,4),price:val(r,5),year:val(r,13),basis:val(r,14)};
+   items.push(x);
+  }
+ }
+ $('status').textContent=`読み込み完了：${items.length}件`;
+ [...new Set(items.map(x=>x.category).filter(Boolean))].sort().forEach(v=>$('cat').add(new Option(v,v)));
+ render();
+}
+function render(){
+ const q=$('q').value.trim().toLowerCase(),c=$('cat').value,sc=$('subcat').value,p=+$('price').value||Infinity;
+ const list=items.filter(x=>Object.entries(x).filter(([key])=>key!=='price').map(([,value])=>value).join(' ').toLowerCase().includes(q)&&(!c||x.category===c)&&(!sc||x.subcategory===sc)&&(!x.price||Number(x.price)<=p));
+ $('count').textContent=`${list.length}件`;
+ $('grid').innerHTML=list.map(x=>`<article class="card" data-id="${items.indexOf(x)}"><h2>${esc(x.name)}</h2><div class="meta">${esc(x.category)} ${esc(x.subcategory)}</div><div class="price">${x.price?esc(x.price)+'円':'価格未登録'}</div></article>`).join('');
+ document.querySelectorAll('.card').forEach(e=>e.onclick=()=>show(items[+e.dataset.id]));
+}
+function show(x){
+ $('detail').innerHTML='<h2>'+esc(x.name)+'</h2>'+[['原語・正式表記',x.original],['カテゴリ',x.category],['サブカテゴリ',x.subcategory],['付記',x.note],['価格',x.price?x.price+'円':''],['推定ボトル年代',x.year],['年代判別の基準',x.basis]].filter(a=>a[1]!==''&&a[1]!=null).map(a=>`<div class="row"><div class="label">${a[0]}</div><div class="value">${esc(a[1])}</div></div>`).join('');
+ $('dlg').showModal();
+}
+['q','price','subcat'].forEach(id=>$(id).addEventListener('input',render));
+$('cat').addEventListener('change',()=>{
+ const c=$('cat').value,s=$('subcat');
+ s.innerHTML='<option value="">サブカテゴリ：すべて</option>';
+ [...new Set(items.filter(x=>x.category===c).map(x=>x.subcategory).filter(Boolean))]
+ .sort().forEach(v=>s.add(new Option(v,v)));
+ s.disabled=!c;
+ render();
+});
+load().catch(e=>$('status').textContent='読み込みエラー：'+e.message);
+</script><footer><p>© 2026 ukabu.marimo tk HP</p>
+    <p>本サイトは店舗スタッフ個人が管理・更新しています。<br>掲載内容には誤記・表記ゆれ・情報更新の遅延が含まれる場合があります。</p>
+    <p>商品名・商標・画像等の権利は各権利者に帰属します。</p>
+</footer></body></html>
