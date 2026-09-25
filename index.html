@@ -69,15 +69,20 @@ function show(x){
 ['q','price','subcat'].forEach(id=>$(id).addEventListener('input',render));
 $('cat').addEventListener('click',e=>{
  if(!e.target.matches('button'))return;
- const c=e.target.dataset.value;
- document.querySelectorAll('#cat button').forEach(b=>b.classList.remove('active'));
- e.target.classList.add('active');
- const paths=items.filter(x=>!c||x.category===c).map(x=>String(x.subcategory||'').split(',').map(v=>v.trim())).filter(a=>a.length);
- const level1=[...new Set(paths.map(a=>a[0]).filter(Boolean))].sort();
- $('subcat').innerHTML='<button class="active" data-value="">すべて</button>';
- level1.forEach(v=>{
-$('subcat').insertAdjacentHTML('beforeend',`<button data-value="${esc(v)}">${esc(v)}</button>`);
- });
+ const c=e.target.dataset.value;document.querySelectorAll('#cat button').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');
+ if(c){
+  const paths=items.filter(x=>x.category===c).map(x=>String(x.subcategory||'').split(',').map(v=>v.trim())).filter(a=>a.length);
+  const level1=[...new Set(paths.map(a=>a[0]).filter(Boolean)
+  )].sort();
+  $('subcat').innerHTML='<button class="active" data-value="">すべて</button>';
+  level1.forEach(v=>{
+    $('subcat').insertAdjacentHTML('beforeend',`<button data-value="${esc(v)}">${esc(v)}</button>`
+    );
+  });
+}else{
+  // カテゴリが「すべて」ならサブカテゴリもリセット
+  $('subcat').innerHTML='';
+}
  $('subcat').dataset.level='1';
  render();
 });
