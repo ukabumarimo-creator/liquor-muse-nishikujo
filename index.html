@@ -52,6 +52,7 @@ function render(){
 }
 function show(x){
  $('detail').innerHTML='<h2>'+esc(x.name)+'</h2>'+[['原語・正式表記',x.original],['カテゴリ',x.category],['サブカテゴリ',x.subcategory],['付記',x.note],['価格',x.price?x.price+'円':''],['推定ボトル年代',x.year],['年代判別の基準',x.basis]].filter(a=>a[1]!==''&&a[1]!=null).map(a=>`<div class="row"><div class="label">${a[0]}</div><div class="value">${esc(a[1])}</div></div>`).join('');
+ history.pushState({dialog:true},'');
  $('dlg').showModal();
 }
 ['q','price','subcat'].forEach(id=>$(id).addEventListener('input',render));
@@ -62,6 +63,9 @@ $('cat').addEventListener('change',()=>{
  .sort().forEach(v=>s.add(new Option(v,v)));
  s.disabled=!c;
  render();
+});
+window.addEventListener('popstate',()=>{
+ if($('dlg').open)$('dlg').close();
 });
 load().catch(e=>$('status').textContent='読み込みエラー：'+e.message);
 </script><footer><p>© 2026 ukabu.marimo tk HP</p>
