@@ -52,7 +52,7 @@ cats.forEach(v=>$('cat').insertAdjacentHTML('beforeend',`<button data-value="${e
 }
 function render(){
  const q=$('q').value.trim().toLowerCase(),c=document.querySelector('#cat .active')?.dataset.value||'',sc=document.querySelector('#subcat .active')?.dataset.value||'',p=+$('price').value||Infinity;
- const list=items.filter(x=>Object.entries(x).filter(([key])=>key!=='price').map(([,value])=>value).join(' ').toLowerCase().includes(q)&&(!c||x.category===c)&&(!sc||x.subcategory===sc)&&(!x.price||Number(x.price)<=p));
+ const list=items.filter(x=>Object.entries(x).filter(([key])=>key!=='price').map(([,value])=>value).join(' ').toLowerCase().includes(q)&&(!c||x.category===c)&&(!sc||String(x.subcategory||'').split(',').map(v=>v.trim()).includes(sc))&&(!x.price||Number(x.price)<=p));
  $('count').textContent=`${list.length}件`;
  $('grid').innerHTML=list.map(x=>`<article class="card" data-id="${items.indexOf(x)}"><h2>${esc(x.name)}</h2><div class="meta">${esc(x.subcategory)}</div><div class="price">${x.price?esc(x.price)+'円':'価格未登録'}</div></article>`).join('');
  document.querySelectorAll('.card').forEach(e=>e.onclick=()=>show(items[+e.dataset.id]));
@@ -68,15 +68,31 @@ $('cat').addEventListener('click',e=>{
  const c=e.target.dataset.value;
  document.querySelectorAll('#cat button').forEach(b=>b.classList.remove('active'));
  e.target.classList.add('active');
- const subs=[...new Set(items.filter(x=>!c||x.category===c).map(x=>x.subcategory).filter(Boolean))].sort();
+ const paths=items.filter(x=>!c||x.category===c).map(x=>String(x.subcategory||'').split(',').map(v=>v.trim())).filter(a=>a.length);
+ const level1=[...new Set(paths.map(a=>a[0]).filter(Boolean))].sort();
  $('subcat').innerHTML='<button class="active" data-value="">すべて</button>';
- subs.forEach(v=>$('subcat').insertAdjacentHTML('beforeend',`<button data-value="${esc(v)}">${esc(v)}</button>`));
+ level1.forEach(v=>{
+$('subcat').insertAdjacentHTML('beforeend',`<button data-value="${esc(v)}">${esc(v)}</button>`);
+ });
+ $('subcat').dataset.level='1';
  render();
 });
 $('subcat').addEventListener('click',e=>{
  if(!e.target.matches('button'))return;
- document.querySelectorAll('#subcat button').forEach(b=>b.classList.remove('active'));
- e.target.classList.add('active');
+ const selected=e.target.dataset.value;
+ const c=document.querySelector('#cat .active')?.dataset.value||'';document.querySelectorAll('#subcat button').forEach(b=>b.classList.remove('active'));e.target.classList.add('active');
+ // 「すべて」
+ if(!selected){
+   $('subcat').dataset.level='1';render();return;}
+ const paths=items.filter(x=>!c||x.category===c).map(x=>String(x.subcategory||'').split(',').map(v=>v.trim())).filter(a=>a[0]===selected);
+ const level2=[...new Set(paths.map(a=>a[1]).filter(Boolean))].sort();
+ // 第2階層が存在する場合
+ if(level2.length){
+   $('subcat').innerHTML='<button class="active" data-value="">すべて</button>';
+   level2.forEach(v=>{
+     $('subcat').insertAdjacentHTML('beforeend',`<button data-value="${esc(v)}">${esc(v)}</button>`);
+   });
+   $('subcat').dataset.level='2';render();return;}
  render();
 });
 window.addEventListener('popstate',()=>{
