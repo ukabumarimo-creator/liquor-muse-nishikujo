@@ -8,7 +8,7 @@ body::before{content:"";position:fixed;inset:0;background:rgba(0,0,0,0.8);z-inde
 header{text-align:center;padding:28px 16px;border-bottom:1px solid #b99a54;background:rgba(0,0,0,0.5)}h1{margin:0;color:#d8b66a;font-size:clamp(22px,4vw,36px)}.sub{color:#aaa;margin-top:6px}
 .controls{max-width:1100px;margin:20px auto;padding:0 16px;display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}input,select{width:100%;padding:12px;background:#222;color:#fff;border:1px solid #65532e;border-radius:6px}
 #status,#count{max-width:1100px;margin:10px auto;padding:0 16px;color:#cdb77e}.grid{max-width:1100px;margin:auto;padding:0 16px 30px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-.card{background: #1d1d1d;;border:1px solid #514326;border-radius:8px;padding:15px;cursor:pointer}.card:hover{border-color:#d8b66a}.card h2{font-size:17px;margin:0 0 8px;color:#f0d38a}.meta{font-size:13px;color:#aaa}.price{margin-top:12px;font-weight:bold}
+.card{background:#1d1d1d;border:1px solid #514326;border-radius:6px;padding:10px;cursor:pointer}.card:hover{border-color:#d8b66a}.card h2{font-size:15px;margin:0 0 5px;color:#f0d38a;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.meta{font-size:12px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.price{margin-top:6px;font-size:13px;font-weight:bold}
 dialog{max-width:620px;width:calc(100% - 30px);background: #1c1c1c;;color:#eee;border:1px solid #b99a54;border-radius:10px;padding:22px}dialog::backdrop{background:linear-gradient(rgba(0,0,0,0.9),rgba(0,0,0,0.9)), url('nisikujo.jpg') center center / cover fixed no-repeat}.row{padding:10px 0;border-bottom:1px solid #383838}.label{color:#d8b66a;font-size:13px}.value{white-space:pre-wrap;margin-top:3px}button{padding:9px 16px;border:0;border-radius:5px}
 footer{text-align:center;color:#888;font-size:12px;line-height:1.8;padding:30px 16px;margin-top:40px;border-top:1px solid #332a18;}
 @media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr)}.controls{grid-template-columns:1fr}}
@@ -47,7 +47,7 @@ function render(){
  const q=$('q').value.trim().toLowerCase(),c=$('cat').value,sc=$('subcat').value,p=+$('price').value||Infinity;
  const list=items.filter(x=>Object.entries(x).filter(([key])=>key!=='price').map(([,value])=>value).join(' ').toLowerCase().includes(q)&&(!c||x.category===c)&&(!sc||x.subcategory===sc)&&(!x.price||Number(x.price)<=p));
  $('count').textContent=`${list.length}件`;
- $('grid').innerHTML=list.map(x=>`<article class="card" data-id="${items.indexOf(x)}"><h2>${esc(x.name)}</h2><div class="meta">${esc(x.category)} ${esc(x.subcategory)}</div><div class="price">${x.price?esc(x.price)+'円':'価格未登録'}</div></article>`).join('');
+ $('grid').innerHTML=list.map(x=>`<article class="card" data-id="${items.indexOf(x)}"><h2>${esc(x.name)}</h2><div class="meta">${esc(x.subcategory)}</div><div class="price">${x.price?esc(x.price)+'円':'価格未登録'}</div></article>`).join('');
  document.querySelectorAll('.card').forEach(e=>e.onclick=()=>show(items[+e.dataset.id]));
 }
 function show(x){
