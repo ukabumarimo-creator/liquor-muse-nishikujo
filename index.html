@@ -17,8 +17,16 @@ footer{text-align:center;color:#888;font-size:12px;line-height:1.8;padding:30px 
 .filter-scroll button{flex:0 0 auto;background:#222;color:#aaa;border:1px solid #65532e;border-radius:20px;white-space:nowrap;}
 .filter-scroll button.active{background:#d8b66a;color:#111;}
 @media(max-width:650px){.grid{grid-template-columns:repeat(2, minmax(0, 180px));justify-content:start;}.controls{grid-template-columns:1fr}}
+#secretMenu {position: fixed;top: 0;right: 0;width: min(280px, 75vw);height: 100%;padding: 30px 20px;background: rgba(15,15,15,0.97);border-left: 1px solid #b99a54;z-index: 1000;transform: translateX(100%);transition: transform 0.25s ease;}
+#secretMenu.open {transform: translateX(0);}
+#secretMenu h2 {color: #d8b66a;font-size: 20px;border-bottom: 1px solid #65532e;padding-bottom: 10px;}
+#secretMenu a {display: block;color: #eee;padding: 12px 0;text-decoration: none;border-bottom: 1px solid #383838;}
+#closeMenu {margin-top: 20px;background: #d8b66a;color: #111;cursor: pointer;}
 </style></head><body>
 <header><h1>お酒の美術館 西九条駅前店</h1><div class="sub">BAR LIQUOR MUSEUM Nishikujo</div></header>
+<aside id="secretMenu"><h2>LINK</h2>
+  <a href="https://ukabumarimo-creator.github.io/liquor-memo/" target="_blank" rel="noopener noreferrer">なんばスカイオ店</a>
+  <button id="closeMenu">閉じる</button></aside>
 <section class="controls">
     <input id="q" placeholder="銘柄・分類・特徴などを検索">
     <select id="price">
@@ -119,6 +127,29 @@ window.addEventListener('popstate',()=>{
  if($('dlg').open)$('dlg').close();
 });
 load().catch(e=>$('status').textContent='読み込みエラー：'+e.message);
+let swipeCount = 0;
+let lastSwipe = 0;
+let touchStartX = 0;
+let touchStartY = 0;
+const header = document.querySelector('header');
+const secretMenu = $('secretMenu');
+header.addEventListener('touchstart', e => {touchStartX = e.touches[0].clientX;touchStartY = e.touches[0].clientY;
+}, { passive: true });
+header.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) < 30 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+  if (dx < 0) {
+    const now = Date.now();
+    if (now - lastSwipe > 3000) {swipeCount = 0;
+    }
+    swipeCount++;lastSwipe = now;
+    if (swipeCount >= 3) {secretMenu.classList.add('open');swipeCount = 0;
+    }
+  } else if (secretMenu.classList.contains('open')) {secretMenu.classList.remove('open');swipeCount = 0;
+  }
+}, { passive: true });
+$('closeMenu').addEventListener('click', () => {secretMenu.classList.remove('open');swipeCount = 0;});
 </script><footer><p>© 2026 ukabu.marimo tk HP</p>
     <p>本サイトは店舗スタッフ個人が管理・更新しています。<br>掲載内容には誤記・表記ゆれ・情報更新の遅延が含まれる場合があります。</p>
     <p>商品名・商標・画像等の権利は各権利者に帰属します。</p>
