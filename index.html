@@ -27,7 +27,7 @@ header {position: relative;overflow: hidden;min-height: 100px;}
 <header id="header"><div class="header-panel active" id="mainHeader">
   <h1>お酒の美術館 西九条駅前店</h1><div class="sub">BAR LIQUOR MUSEUM Nishi-Kujo</div></div>
   <div class="header-panel" id="linkHeader"><h1>LINK</h1><div class="sub">
-  <a href="https://ukabumarimo-creator.github.io/liquor-memo/"target="_blank" rel="noopener noreferrer">Liquor memo</a></div></div></header>
+  <a href="https://ukabumarimo-creator.github.io/links/"target="_blank" rel="noopener noreferrer">ukabu.marimo tk</a></div></div></header>
 <section class="controls">
     <input id="q" placeholder="銘柄・分類・特徴などを検索"><select id="price">
     <option value="">価格：すべて</option><option value="1000">1,000円以下</option><option value="1500">1,500円以下</option><option value="2000">2,000円以下</option><option value="3000">3,000円以下</option></select></section>
@@ -53,7 +53,7 @@ async function load(){
    items.push(x);
   }
  }
- $('status').innerHTML=`読み込み完了：${items.length}件 <a href="https://ukabumarimo-creator.github.io/liquor-memo/" target="_blank" rel="noopener noreferrer">Liquor memo</a>`;
+ $('status').innerHTML=`読み込み完了：${items.length}件 <a href="https://ukabumarimo-creator.github.io/links/" target="_blank" rel="noopener noreferrer">ukabu.marimo tk</a>`;
  const cats=[...new Set(items.map(x=>x.category).filter(Boolean))].sort();
 $('cat').innerHTML='<button class="active" data-value="">すべて</button>';
 cats.forEach(v=>$('cat').insertAdjacentHTML('beforeend',`<button data-value="${esc(v)}">${esc(v)}</button>`));
@@ -161,6 +161,32 @@ header.addEventListener('touchend', e => {
       switchHeader(true);swipeCount = 0;}
   }
 }, { passive: true });
+let mouseStartX = 0;
+let mouseStartY = 0;
+let dragging = false;
+header.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;mouseStartX = e.clientX;mouseStartY = e.clientY;dragging = true;
+});
+window.addEventListener('mouseup', e => {
+  if (!dragging) return;dragging = false;
+  const dx = e.clientX - mouseStartX;
+  const dy = e.clientY - mouseStartY;
+  if (Math.abs(dx) < 30 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+  if (menuOpen) {
+    if (dx > 0) {switchHeader(false);swipeCount = 0;}
+    return;
+  }
+  if (dx < 0) {
+    const now = Date.now();
+    if (now - lastSwipe > 3000) {swipeCount = 0;}
+    swipeCount++;lastSwipe = now;
+    if (swipeCount === 1) {
+      header.animate([{ transform: 'translateX(0)' },{ transform: 'translateX(-12px)' },{ transform: 'translateX(0)' }], { duration: 250 });
+    } else if (swipeCount === 2) {
+      header.animate([{ transform: 'translateX(0)' },{ transform: 'translateX(-25px)' },{ transform: 'translateX(0)' }], { duration: 300 });
+    } else {switchHeader(true);swipeCount = 0;}
+  }
+});
 </script><footer><p>© 2026 ukabu.marimo tk HP</p>
     <p>本サイトは店舗スタッフ個人が管理・更新しています。<br>掲載内容には誤記・表記ゆれ・情報更新の遅延が含まれる場合があります。</p>
     <p>商品名・商標・画像等の権利は各権利者に帰属します。</p>
