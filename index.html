@@ -53,7 +53,7 @@ async function load(){
    items.push(x);
   }
  }
- $('status').innerHTML=`読み込み完了：${items.length}件 <a href="https://ukabumarimo-creator.github.io/links/" target="_blank" rel="noopener noreferrer">ukabu.marimo tk</a>`;
+ $('status').innerHTML=`読み込み完了：${items.length}件 <a href="https://ukabumarimo-creator.github.io/liquor-memo/" target="_blank" rel="noopener noreferrer">Liquor　memo</a>`;
  const cats=[...new Set(items.map(x=>x.category).filter(Boolean))].sort();
 $('cat').innerHTML='<button class="active" data-value="">すべて</button>';
 cats.forEach(v=>$('cat').insertAdjacentHTML('beforeend',`<button data-value="${esc(v)}">${esc(v)}</button>`));
